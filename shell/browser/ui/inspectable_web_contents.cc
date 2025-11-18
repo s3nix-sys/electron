@@ -566,8 +566,21 @@ void InspectableWebContents::LoadCompleted() {
       if (win && win->IsWindowControlsOverlayEnabled()) {
         if (IsAppRTL() && dock_state_ == "left") {
           dock_state_ = "undocked";
+          // Persist the forced undocked state so the preference reflects the
+          // actual state when Window Controls Overlay prevents docking. This
+          // avoids situations where the frontend believes it is docked while
+          // the embedder has forced undock due to overlay controls.
+          {
+            ScopedDictPrefUpdate update(pref_service_, kDevToolsPreferences);
+            update->Set("currentDockState", base::Value(dock_state_));
+          }
         } else if (dock_state_ == "right") {
           dock_state_ = "undocked";
+          // Persist the forced undocked state for the same reason as above.
+          {
+            ScopedDictPrefUpdate update(pref_service_, kDevToolsPreferences);
+            update->Set("currentDockState", base::Value(dock_state_));
+          }
         }
       }
     }
